@@ -9,6 +9,10 @@ import SupplierPortal from "./pages/SupplierPortal";
 import Marketplace from "./pages/Marketplace";
 import About from "./pages/About";
 import NotFound from "./pages/NotFound";
+import VendorLogin from "./pages/VendorLogin";
+import VendorSignup from "./pages/VendorSignup";
+import SupplierLogin from "./pages/SupplierLogin";
+import SupplierSignup from "./pages/SupplierSignup";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +28,10 @@ const App = () => (
           <Route path="/supplier-portal" element={<SupplierPortal />} />
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/about" element={<About />} />
+          <Route path="/vendor-login" element={<VendorLogin />} />
+          <Route path="/vendor-signup" element={<VendorSignup />} />
+          <Route path="/supplier-login" element={<SupplierLogin />} />
+          <Route path="/supplier-signup" element={<SupplierSignup />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

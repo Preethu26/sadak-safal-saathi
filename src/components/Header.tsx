@@ -35,6 +35,20 @@ const Header = () => {
             About
           </Button>
           <Button 
+            variant="outline"
+            onClick={() => navigate("/vendor-login")}
+            className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+          >
+            Vendor Login
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate("/supplier-login")}
+            className="text-primary border-primary hover:bg-primary hover:text-primary-foreground"
+          >
+            Supplier Login
+          </Button>
+          <Button 
             variant="vendor"
             onClick={() => navigate("/vendor-portal")}
           >
