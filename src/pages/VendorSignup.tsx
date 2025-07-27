@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
+import { supabase } from "@/integrations/supabase/client";
 
 const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -28,6 +29,7 @@ type SignupFormData = z.infer<typeof signupSchema>;
 const VendorSignup = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -44,14 +46,71 @@ const VendorSignup = () => {
 
   const onSubmit = async (data: SignupFormData) => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Account Created Successfully",
-        description: "Welcome to Sadak Safal Saathi! Your vendor account is now active.",
+    
+    try {
+      const redirectUrl = `${window.location.origin}/vendor-portal`;
+      
+      // Sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: data.name,
+            user_type: 'vendor'
+          }
+        }
       });
-    }, 1500);
+
+      if (authError) {
+        throw authError;
+      }
+
+      if (authData.user) {
+        // Create profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: authData.user.id,
+            full_name: data.name,
+            phone: data.phone,
+            user_type: 'vendor'
+          });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+
+        // Create vendor profile
+        const { error: vendorError } = await supabase
+          .from('vendor_profiles')
+          .insert({
+            user_id: authData.user.id,
+            shop_name: data.shopName,
+            location: data.location
+          });
+
+        if (vendorError) {
+          console.error('Vendor profile creation error:', vendorError);
+        }
+
+        toast({
+          title: "Account Created Successfully",
+          description: "Please check your email to verify your account before logging in.",
+        });
+        
+        navigate('/vendor-login');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Signup Failed",
+        description: error.message || "An error occurred during signup. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
