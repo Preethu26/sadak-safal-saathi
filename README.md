@@ -60,7 +60,6 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 - HTML
-- JSS
 - Node JS
 
 ## How can I deploy this project?
