@@ -45,6 +45,36 @@ const SupplierLogin = () => {
       }
 
       if (authData.user) {
+        // Check if profile exists, create if not (for first-time login after email verification)
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authData.user.id)
+          .single();
+
+        if (!existingProfile && authData.user.user_metadata) {
+          // Create profiles from user metadata
+          const metadata = authData.user.user_metadata;
+          
+          if (metadata.full_name) {
+            await supabase.from('profiles').insert({
+              user_id: authData.user.id,
+              full_name: metadata.full_name,
+              phone: metadata.phone,
+              user_type: metadata.user_type || 'supplier'
+            });
+
+            if (metadata.business_name && metadata.location && metadata.gst_number) {
+              await supabase.from('supplier_profiles').insert({
+                user_id: authData.user.id,
+                business_name: metadata.business_name,
+                location: metadata.location,
+                gst_number: metadata.gst_number
+              });
+            }
+          }
+        }
+
         toast({
           title: "Login Successful",
           description: "Welcome back to Sadak Safal Saathi!",

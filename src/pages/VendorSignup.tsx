@@ -68,31 +68,19 @@ const VendorSignup = () => {
       }
 
       if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authData.user.id,
+        // Store signup data in user metadata for profile creation after email verification
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: {
             full_name: data.name,
             phone: data.phone,
-            user_type: 'vendor'
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-
-        // Create vendor profile
-        const { error: vendorError } = await supabase
-          .from('vendor_profiles')
-          .insert({
-            user_id: authData.user.id,
             shop_name: data.shopName,
-            location: data.location
-          });
+            location: data.location,
+            user_type: 'vendor'
+          }
+        });
 
-        if (vendorError) {
-          console.error('Vendor profile creation error:', vendorError);
+        if (updateError) {
+          console.error('User metadata update error:', updateError);
         }
 
         toast({

@@ -45,6 +45,35 @@ const VendorLogin = () => {
       }
 
       if (authData.user) {
+        // Check if profile exists, create if not (for first-time login after email verification)
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', authData.user.id)
+          .single();
+
+        if (!existingProfile && authData.user.user_metadata) {
+          // Create profiles from user metadata
+          const metadata = authData.user.user_metadata;
+          
+          if (metadata.full_name) {
+            await supabase.from('profiles').insert({
+              user_id: authData.user.id,
+              full_name: metadata.full_name,
+              phone: metadata.phone,
+              user_type: metadata.user_type || 'vendor'
+            });
+
+            if (metadata.shop_name && metadata.location) {
+              await supabase.from('vendor_profiles').insert({
+                user_id: authData.user.id,
+                shop_name: metadata.shop_name,
+                location: metadata.location
+              });
+            }
+          }
+        }
+
         toast({
           title: "Login Successful",
           description: "Welcome back to Sadak Safal Saathi!",

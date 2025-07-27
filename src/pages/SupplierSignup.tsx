@@ -70,32 +70,20 @@ const SupplierSignup = () => {
       }
 
       if (authData.user) {
-        // Create profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: authData.user.id,
+        // Store signup data in user metadata for profile creation after email verification
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: {
             full_name: data.name,
             phone: data.phone,
-            user_type: 'supplier'
-          });
-
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-        }
-
-        // Create supplier profile
-        const { error: supplierError } = await supabase
-          .from('supplier_profiles')
-          .insert({
-            user_id: authData.user.id,
             business_name: data.businessName,
             location: data.location,
-            gst_number: data.gstNumber
-          });
+            gst_number: data.gstNumber,
+            user_type: 'supplier'
+          }
+        });
 
-        if (supplierError) {
-          console.error('Supplier profile creation error:', supplierError);
+        if (updateError) {
+          console.error('User metadata update error:', updateError);
         }
 
         toast({
